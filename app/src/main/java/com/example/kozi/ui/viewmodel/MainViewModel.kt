@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
-
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
 
@@ -25,7 +24,7 @@ class MainViewModel : ViewModel() {
     private val _showMessage = MutableStateFlow<String?>(null)
     val showMessage: StateFlow<String?> = _showMessage.asStateFlow()
 
-    // Historial de órdenes (local)
+    // Historial de órdenes
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> = _orders.asStateFlow()
 
@@ -40,6 +39,7 @@ class MainViewModel : ViewModel() {
         return if (isVip) total * 0.8 else total // 20% de descuento para VIP
     }
 
+    // Obtener monto del descuento
     fun getDiscountAmount(isVip: Boolean): Double {
         return if (isVip) getTotalPrice() * 0.2 else 0.0
     }
@@ -73,20 +73,23 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    // Guarda en historial (local) antes de limpiar
+    // guarda en historial antes de limpiar
     fun clearCart(currentUser: User? = null) {
+        // Guardar en historial si hay productos y usuario
         val cartItemsCurrent = _cartItems.value
         if (cartItemsCurrent.isNotEmpty() && currentUser != null) {
             val newOrder = Order(
                 id = "ORDER_${System.currentTimeMillis()}",
                 userId = currentUser.id,
-                products = cartItemsCurrent.toMap(),
+                products = cartItemsCurrent.toMap(), // Copiamos los productos
                 total = getTotalPriceWithDiscount(currentUser.isVip),
                 discount = getDiscountAmount(currentUser.isVip),
                 isVip = currentUser.isVip
             )
             _orders.value = _orders.value + newOrder
         }
+
+        // Limpiar carrito
         _cartItems.value = emptyMap()
         _showMessage.value = "🎉 ¡Compra realizada con éxito!"
     }
@@ -105,10 +108,12 @@ class MainViewModel : ViewModel() {
         else allProducts.filter { it.category.name == category }
     }
 
+    //Obtener órdenes de un usuario específico
     fun getOrdersByUser(userId: Int): List<Order> {
         return _orders.value.filter { it.userId == userId }
     }
 
+    //Obtener todas las órdenes
     fun getAllOrders(): List<Order> {
         return _orders.value
     }

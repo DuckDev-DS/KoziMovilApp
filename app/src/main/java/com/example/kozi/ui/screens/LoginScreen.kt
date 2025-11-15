@@ -17,12 +17,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.kozi.ui.viewmodel.AuthViewModel
+import com.example.kozi.ui.viewmodel.SessionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    sessionVm: SessionViewModel
 ) {
     val authState = authViewModel.authState.collectAsState().value
     val currentUser = authViewModel.currentUser.collectAsState().value

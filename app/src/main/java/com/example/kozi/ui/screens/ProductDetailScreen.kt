@@ -1,32 +1,13 @@
 package com.example.kozi.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.kozi.model.Product
 import com.example.kozi.ui.viewmodel.MainViewModel
+import com.example.kozi.ui.viewmodel.CartViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +31,8 @@ import kotlinx.coroutines.delay
 fun ProductDetailScreen(
     productId: Int,
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    cartVm: CartViewModel // 👈 agregado
 ) {
     val product = viewModel.products.value.find { it.id == productId }
     val showMessageState = viewModel.showMessage.collectAsState().value
@@ -87,7 +70,6 @@ fun ProductDetailScreen(
                 }
             )
         },
-        // Snackbar para mensajes
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         if (product == null) {
@@ -162,9 +144,16 @@ fun ProductDetailScreen(
                             Text("Seguir Comprando")
                         }
 
+                        // 👇 cambia este botón
                         Button(
                             onClick = {
-                                viewModel.addToCart(product)
+                                // Agrega el producto usando Room
+                                cartVm.add(
+                                    productId = product.id,
+                                    name = product.name,
+                                    price = product.price,
+                                    imageRes = product.image
+                                )
                             },
                             modifier = Modifier.weight(1f)
                         ) {

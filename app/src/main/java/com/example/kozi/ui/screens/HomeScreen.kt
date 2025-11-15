@@ -24,7 +24,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -45,12 +44,14 @@ import com.example.kozi.ui.components.ProductItem
 import com.example.kozi.ui.navigation.Screen
 import com.example.kozi.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
+import com.example.kozi.ui.viewmodel.CartViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    cartVm: CartViewModel
 ) {
     val productsState = viewModel.products.collectAsState().value
     val selectedCategoryState = viewModel.selectedCategory.collectAsState().value
@@ -175,7 +176,12 @@ fun HomeScreen(
                     ProductItem(
                         product = product,
                         onAddToCart = {
-                            viewModel.addToCart(product)
+                            cartVm.add(
+                                productId = product.id,
+                                name = product.name,
+                                price = product.price,
+                                imageRes = product.image
+                            )
                         },
                         onProductClick = {
                             navController.navigate(Screen.ProductDetail.createRoute(product.id))
