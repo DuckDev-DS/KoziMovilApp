@@ -18,6 +18,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}" // Excluye licencias comunes
+            excludes += "META-INF/LICENSE.md" // Excluye específicamente el fichero que da problemas
+            excludes += "META-INF/LICENSE-notice.md"
+        }
+    }
 
     buildTypes {
         release {
@@ -44,7 +51,6 @@ android {
 }
 
 dependencies {
-<<<<<<< HEAD
 
     // --- NETWORK ---
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
@@ -61,13 +67,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 
     // --- ROOM ---
-=======
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
->>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
@@ -100,18 +99,23 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:5.8.0")
     testImplementation("io.mockk:mockk:1.13.10")
 
+
     // --- INSTRUMENTED TESTS ---
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("io.mockk:mockk-android:1.13.10")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.navigation:navigation-testing:2.7.6")
 
 
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
 }
 
 tasks.withType<Test>().configureEach {
