@@ -4,20 +4,18 @@ import com.example.kozi.data.local.UserEntity
 import com.example.kozi.data.remote.model.Usuario
 import com.example.kozi.model.User
 
-// =============================
-//     API → ROOM
-// =============================
-fun Usuario.toEntity(
+
+    fun Usuario.toEntity(
     currentPhotoUri: String? = null,
     currentPassword: String? = null
 ): UserEntity = UserEntity(
     id = id,
-    nombre = nombreUsuario,                       // ← CORREGIDO
-    correo = email,                               // ← CORREGIDO
-    tipoMembresia = membresia?.tipoMembresia,     // ← CORREGIDO
+    nombre = nombreUsuario,
+    correo = email,
+    tipoMembresia = membresia?.tipoMembresia,
     activo = activo,
     rolId = rol?.id,
-    rolNombre = rol?.nombreRol,                   // ← CORREGIDO
+    rolNombre = rol?.nombreRol,
     photoUri = currentPhotoUri,
     isVip = membresia?.tipoMembresia
         ?.equals("VIP", ignoreCase = true) == true,
@@ -25,9 +23,7 @@ fun Usuario.toEntity(
 )
 
 
-// =============================
-//     ROOM → DOMINIO
-// =============================
+
 fun UserEntity.toDomain(): User = User(
     id = id.toInt(),
     name = nombre,
@@ -38,9 +34,6 @@ fun UserEntity.toDomain(): User = User(
 )
 
 
-// =============================
-//     DOMINIO → ROOM
-// =============================
 fun User.toEntity(): UserEntity = UserEntity(
     id = this.id.toLong(),
     nombre = this.name,

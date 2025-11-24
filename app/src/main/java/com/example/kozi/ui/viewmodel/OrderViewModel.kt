@@ -33,9 +33,8 @@ class OrderViewModel(
      * - Guarda el pedido en Room (OrderEntity + OrderItemEntity)
      * - Limpia el carrito
      *
-     * Ya NO hace POST al backend.
      */
-    fun createOrderFromCartOnline( // mantenemos el nombre para no romper llamadas
+    fun createOrderFromCartOnline(
         currentUser: User,
         onResult: (Boolean, String?) -> Unit
     ) {
@@ -127,11 +126,8 @@ class OrderViewModel(
     }
 
     /**
-     * OPCIONAL:
      * Sincroniza el historial de compras desde el backend:
      * GET api/usuarios/{usuarioId}/pedidos
-     *
-     * Si quieres full local, puedes comentar todo esto o no llamarlo desde la UI.
      */
     fun syncPedidosFromBackend(
         currentUser: User,
@@ -147,7 +143,7 @@ class OrderViewModel(
                         return@launch
                     }
                     204 -> {
-                        // Sin pedidos remotos, no tocamos Room
+                        // Sin pedidos remotos
                         onResult(true, null)
                         return@launch
                     }
@@ -164,7 +160,7 @@ class OrderViewModel(
                     val orderId = orderDao.insertOrder(
                         OrderEntity(
                             userEmail = currentUser.email,
-                            createdAt = System.currentTimeMillis(), // opcional: parsear fecha del backend
+                            createdAt = System.currentTimeMillis(),
                             subtotal = pedido.subtotal,
                             discount = pedido.descuento,
                             total = pedido.total

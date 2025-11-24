@@ -63,9 +63,9 @@ class AuthViewModel(
 
 
     /**
-     * Mapea el Usuario del backend al User que usa la app.
+     * Mapea el Usuario del ackend al User que usa la app.
      *
-     * Usuario backend (según Swagger):
+     * Usuario backend (Swagger):
      *  - nombreUsuario
      *  - email
      *  - membresia.tipoMembresia = "VIP" / "NORMAL" ...

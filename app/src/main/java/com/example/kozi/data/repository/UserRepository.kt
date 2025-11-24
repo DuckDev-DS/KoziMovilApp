@@ -38,11 +38,4 @@ class UserRepository(
         userDao.clear()
     }
 
-    // 🔜 FUTURO MIXTO:
-    // Aquí más adelante puedes agregar cosas como:
-    //
-    // suspend fun refreshUserFromBackend(id: Long) { ... }
-    // suspend fun updateUserRemote(updateRequest: UsuarioUpdateRequest) { ... }
-    //
-    // usando KoziApiClient.api y los mappers UsuarioRemote <-> UserEntity.
 }

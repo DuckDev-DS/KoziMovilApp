@@ -4,7 +4,7 @@ data class Usuario(
     val id: Long,
     val nombreUsuario: String,
     val email: String,
-    val password: String?,     // writeOnly en backend, aquí puede venir null
+    val password: String?,
     val fotoPerfil: String?,
     val activo: Boolean,
     val rol: RolRemote?,

@@ -118,7 +118,7 @@ fun UserScreen(
         }
     }
 
-    // ========= ESTADO DE CARGA / SIN USUARIO =========
+    // ESTADO DE CARGA / SIN USUARIO
     if (currentUser == null) {
         // En vez de navegar desde aquí (que da problemas),
         // mostramos un mensaje y un botón para ir a login.
@@ -153,7 +153,7 @@ fun UserScreen(
     // A partir de aquí currentUser NO es nulo
     val user = currentUser!!
 
-    // ========= HISTORIAL DESDE ROOM (PERSISTENCIA LOCAL) =========
+    // HISTORIAL DESDE ROOM (PERSISTENCIA LOCAL)
     val roomOrders by orderVm
         .observeOrdersFor(user.email)
         .collectAsState(initial = emptyList())
@@ -207,7 +207,7 @@ fun UserScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        // ======= HISTORIAL DE COMPRAS (Room) =======
+        // HISTORIAL DE COMPRAS (Room)
         Text(text = "Historial de Compras", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(12.dp))
 
@@ -272,7 +272,7 @@ fun UserScreen(
         }
     }
 
-    // ========= DIÁLOGO PARA ELEGIR CÁMARA / GALERÍA =========
+    // DIÁLOGO PARA ELEGIR CÁMARA / GALERÍA
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { showDialog.value = false },

@@ -39,11 +39,11 @@ class MainViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            // 1) Productos locales (para no dejar la app vacía si la API falla)
+            // Productos locales (para no dejar la app vacía si la API falla)
             val localProducts = ProductRepository.getProducts()
             _products.value = localProducts
 
-            // 2) Intentar cargar datos desde la API
+            // Intentar cargar datos desde la API
             try {
                 val remoteProducts = KoziApiClient.api.getProductos()
                 val merged = mergeRemoteWithLocal(remoteProducts, localProducts)
@@ -90,7 +90,7 @@ class MainViewModel : ViewModel() {
             }
         }
 
-        // Opcional: agregar productos que existen solo localmente y no en la API
+        // agregar productos que existen solo localmente y no en la API
         val remoteIds = remote.map { it.id.toInt() }.toSet()
         val onlyLocal = local.filter { it.id !in remoteIds }
 

@@ -29,7 +29,7 @@ fun RegisterScreen(
     val currentUser = authViewModel.currentUser.collectAsState().value
     val expandedState = remember { mutableStateOf(false) }
 
-    // Si el registro es exitoso (se setea currentUser), regresar automáticamente
+    // Si el registro es exitoso regresar automáticamente
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
             navController.popBackStack()

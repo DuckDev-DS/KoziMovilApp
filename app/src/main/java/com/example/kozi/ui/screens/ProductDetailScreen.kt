@@ -35,7 +35,6 @@ fun ProductDetailScreen(
     viewModel: MainViewModel,
     cartVm: CartViewModel
 ) {
-    // 👇 Ahora sí: usamos collectAsState, nada de .value directo
     val productsState by viewModel.products.collectAsState()
     val product: Product? = productsState.find { it.id == productId }
 
@@ -44,7 +43,7 @@ fun ProductDetailScreen(
     // Snackbar mensajes
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Mostrar mensaje (ej: errores de API, compra realizada, etc.)
+    // Mostrar mensaje (ej: errores de API, compra realizada)
     LaunchedEffect(showMessageState) {
         if (showMessageState != null) {
             snackbarHostState.showSnackbar(showMessageState!!)

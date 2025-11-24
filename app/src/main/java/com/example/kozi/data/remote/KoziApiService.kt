@@ -6,15 +6,11 @@ import retrofit2.http.*
 
 interface KoziApiService {
 
-    // =======================
-    //        HEALTH
-    // =======================
+
     @GET("api/health")
     suspend fun health(): String
 
-    // =======================
-    //        PRODUCTOS
-    // =======================
+
     @GET("api/productos")
     suspend fun getProductos(): List<Producto>
 
@@ -29,9 +25,6 @@ interface KoziApiService {
     ): List<Producto>
 
 
-    // =======================
-    //        USUARIOS
-    // =======================
 
     // REGISTRO
     @POST("api/usuarios")
