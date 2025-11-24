@@ -91,7 +91,6 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(
                                 navController = navController,
                                 authViewModel = authViewModel,
-                                sessionVm = sessionVm
                             )
                         }
                         composable(Screen.Register.route) {

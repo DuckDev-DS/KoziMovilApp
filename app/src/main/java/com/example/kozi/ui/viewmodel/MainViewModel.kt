@@ -2,6 +2,10 @@ package com.example.kozi.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kozi.R
+import com.example.kozi.data.remote.KoziApiClient
+import com.example.kozi.data.remote.model.Producto as RemoteProducto
+import com.example.kozi.model.Category
 import com.example.kozi.model.Order
 import com.example.kozi.model.Product
 import com.example.kozi.model.User
@@ -12,15 +16,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
+
+    // Lista de productos que consumen las pantallas
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
 
+    // Carrito (Product -> cantidad) para este ViewModel
     private val _cartItems = MutableStateFlow<Map<Product, Int>>(emptyMap())
     val cartItems: StateFlow<Map<Product, Int>> = _cartItems.asStateFlow()
 
+    // Filtro de categoría seleccionada
     private val _selectedCategory = MutableStateFlow<String?>(null)
     val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
 
+    // Mensajes (snackbar)
     private val _showMessage = MutableStateFlow<String?>(null)
     val showMessage: StateFlow<String?> = _showMessage.asStateFlow()
 
@@ -30,8 +39,62 @@ class MainViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            _products.value = ProductRepository.getProducts()
+            // 1) Productos locales (para no dejar la app vacía si la API falla)
+            val localProducts = ProductRepository.getProducts()
+            _products.value = localProducts
+
+            // 2) Intentar cargar datos desde la API
+            try {
+                val remoteProducts = KoziApiClient.api.getProductos()
+                val merged = mergeRemoteWithLocal(remoteProducts, localProducts)
+                _products.value = merged
+            } catch (e: Exception) {
+                // Si algo falla, nos quedamos con los productos locales
+                _showMessage.value =
+                    "No se pudo conectar con el servidor. Se muestran productos locales."
+            }
         }
+    }
+
+    /**
+     * Une los productos remotos con los locales:
+     * - Usa nombre, descripción y precio del backend.
+     * - Mantiene categoría e imagen de tu repositorio local (para que tus pantallas no cambien).
+     */
+    private fun mergeRemoteWithLocal(
+        remote: List<RemoteProducto>,
+        local: List<Product>
+    ): List<Product> {
+        val localById = local.associateBy { it.id }
+        val defaultCategory: Category =
+            ProductRepository.categories.firstOrNull() ?: Category(0, "Otros")
+
+        val fromRemote = remote.map { p ->
+            val base = localById[p.id.toInt()]
+            if (base != null) {
+                base.copy(
+                    name = p.nombre,
+                    description = p.descripcion,
+                    price = p.precio
+                )
+            } else {
+                // Producto que está en la API pero no en el repo local
+                Product(
+                    id = p.id.toInt(),
+                    name = p.nombre,
+                    description = p.descripcion,
+                    price = p.precio,
+                    category = defaultCategory,
+                    image = R.drawable.ic_launcher_foreground // genérico
+                )
+            }
+        }
+
+        // Opcional: agregar productos que existen solo localmente y no en la API
+        val remoteIds = remote.map { it.id.toInt() }.toSet()
+        val onlyLocal = local.filter { it.id !in remoteIds }
+
+        return fromRemote + onlyLocal
     }
 
     fun getTotalPriceWithDiscount(isVip: Boolean): Double {
@@ -73,7 +136,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    // guarda en historial antes de limpiar
+    // Guarda en historial antes de limpiar
     fun clearCart(currentUser: User? = null) {
         // Guardar en historial si hay productos y usuario
         val cartItemsCurrent = _cartItems.value
@@ -81,7 +144,7 @@ class MainViewModel : ViewModel() {
             val newOrder = Order(
                 id = "ORDER_${System.currentTimeMillis()}",
                 userId = currentUser.id,
-                products = cartItemsCurrent.toMap(), // Copiamos los productos
+                products = cartItemsCurrent.toMap(),
                 total = getTotalPriceWithDiscount(currentUser.isVip),
                 discount = getDiscountAmount(currentUser.isVip),
                 isVip = currentUser.isVip
@@ -98,6 +161,7 @@ class MainViewModel : ViewModel() {
         _showMessage.value = null
     }
 
+    // Lista de nombres de categoría (para el dropdown de Home)
     val categories: List<String>
         get() = _products.value.map { it.category.name }.distinct()
 
@@ -108,12 +172,12 @@ class MainViewModel : ViewModel() {
         else allProducts.filter { it.category.name == category }
     }
 
-    //Obtener órdenes de un usuario específico
+    // Obtener órdenes de un usuario específico
     fun getOrdersByUser(userId: Int): List<Order> {
         return _orders.value.filter { it.userId == userId }
     }
 
-    //Obtener todas las órdenes
+    // Obtener todas las órdenes
     fun getAllOrders(): List<Order> {
         return _orders.value
     }

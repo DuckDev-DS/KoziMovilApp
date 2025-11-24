@@ -17,19 +17,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.kozi.ui.viewmodel.AuthViewModel
-import com.example.kozi.ui.viewmodel.SessionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
-    authViewModel: AuthViewModel,
-    sessionVm: SessionViewModel
+    authViewModel: AuthViewModel
 ) {
     val authState = authViewModel.authState.collectAsState().value
     val currentUser = authViewModel.currentUser.collectAsState().value
 
-    // Si el login es exitoso, regresar automáticamente
+    // Si el login fue exitoso (currentUser != null), volvemos atrás
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
             navController.popBackStack()
@@ -39,8 +37,7 @@ fun LoginScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Iniciar Sesión") },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(),
+                title = { Text("Iniciar sesión") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -57,90 +54,67 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Título
-            Text(
-                text = "Bienvenido",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
 
             Text(
-                text = "Inicia sesión en tu cuenta",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 32.dp)
+                text = "Bienvenido a KOZI",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            // Campo de correo
+            // Correo
             OutlinedTextField(
                 value = authState.email,
                 onValueChange = { authViewModel.onEmailChange(it) },
                 label = { Text("Correo electrónico") },
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = "Email")
-                },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
                 isError = authState.errors.email != null,
                 supportingText = {
-                    authState.errors.email?.let { errorMessage ->
-                        Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+                    authState.errors.email?.let {
+                        Text(text = it, color = MaterialTheme.colorScheme.error)
                     }
                 }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de contraseña
+            // Contraseña
             OutlinedTextField(
                 value = authState.password,
                 onValueChange = { authViewModel.onPasswordChange(it) },
                 label = { Text("Contraseña") },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = "Contraseña")
-                },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
                 isError = authState.errors.password != null,
                 supportingText = {
-                    authState.errors.password?.let { errorMessage ->
-                        Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+                    authState.errors.password?.let {
+                        Text(text = it, color = MaterialTheme.colorScheme.error)
                     }
                 }
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Botón de iniciar sesión
-            Button(
-                onClick = {
-                    authViewModel.loginUser()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Text("Iniciar Sesión")
-            }
-
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Texto para redirigir a registro
+            Button(
+                onClick = { authViewModel.loginUser() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                enabled = authState.email.isNotEmpty() && authState.password.isNotEmpty()
+            ) {
+                Text("Iniciar sesión")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             TextButton(
                 onClick = { navController.navigate("register") }
             ) {
                 Text("¿No tienes cuenta? Regístrate")
             }
-
-            // Texto de demo
-            Spacer(modifier = Modifier.height(32.dp))
-            Text(
-                text = "Demo: \nDani (VIP): dani@gmail.com / 123456 \nLucas (Normal): lucas@gmail.com / 123456",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.padding(top = 16.dp)
-            )
         }
     }
 }

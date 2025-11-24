@@ -1,5 +1,8 @@
 package com.example.kozi.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -16,21 +19,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.navigation.NavController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.kozi.data.local.OrderWithItems
 import com.example.kozi.ui.components.ProfileImage
 import com.example.kozi.ui.viewmodel.AuthViewModel
 import com.example.kozi.ui.viewmodel.MainViewModel
+import com.example.kozi.ui.viewmodel.OrderViewModel
 import com.example.kozi.ui.viewmodel.ProfileViewModel
 import com.example.kozi.ui.viewmodel.SessionViewModel
-import com.example.kozi.ui.viewmodel.OrderViewModel
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun UserScreen(
@@ -40,19 +45,19 @@ fun UserScreen(
     sessionVm: SessionViewModel,
     orderVm: OrderViewModel
 ) {
-    val currentUser = authViewModel.currentUser.collectAsState().value
+    val currentUser by authViewModel.currentUser.collectAsState()
     val profileViewModel: ProfileViewModel = viewModel()
-    val profileImageUri = profileViewModel.profileImageUri.collectAsState().value
+    val profileImageUri by profileViewModel.profileImageUri.collectAsState()
     val context = LocalContext.current
 
-    // ======= FOTO DE PERFIL (cámara/galería) =======
+    // ========= MANEJO DE FOTO DE PERFIL =========
     val showDialog = remember { mutableStateOf(false) }
     val tempImageUriState = rememberSaveable { mutableStateOf(android.net.Uri.EMPTY) }
     val tempImageUri = tempImageUriState.value
 
     fun createTempImageFile(): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+        val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
     }
 
@@ -76,7 +81,11 @@ fun UserScreen(
         if (isGranted) {
             try {
                 val tempFile = createTempImageFile()
-                val uri = FileProvider.getUriForFile(context, "com.example.kozi.fileprovider", tempFile)
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "com.example.kozi.fileprovider",
+                    tempFile
+                )
                 tempImageUriState.value = uri
                 cameraLauncher.launch(uri)
             } catch (e: Exception) {
@@ -87,42 +96,67 @@ fun UserScreen(
 
     fun handleCameraClick() {
         val granted = ContextCompat.checkSelfPermission(
-            context, android.Manifest.permission.CAMERA
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
 
         if (granted) {
             try {
                 val tempFile = createTempImageFile()
-                val uri = FileProvider.getUriForFile(context, "com.example.kozi.fileprovider", tempFile)
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "com.example.kozi.fileprovider",
+                    tempFile
+                )
                 tempImageUriState.value = uri
                 cameraLauncher.launch(uri)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         } else {
-            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
-    LaunchedEffect(currentUser) {
-        if (currentUser == null) {
-            navController.navigate("login") { popUpTo("user") { inclusive = true } }
-        }
-    }
-
-    // ======= UI =======
+    // ========= ESTADO DE CARGA / SIN USUARIO =========
     if (currentUser == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+        // En vez de navegar desde aquí (que da problemas),
+        // mostramos un mensaje y un botón para ir a login.
+        Box(
+            Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Sesión cerrada", style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Inicia sesión para ver tu perfil",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        navController.navigate("login") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                ) {
+                    Text("Ir a iniciar sesión")
+                }
+            }
         }
         return
     }
 
-    //HISTORIAL DESDE ROOM (filtrado por email)
-    val roomOrders = orderVm
-        .observeOrdersFor(currentUser.email)
+    // A partir de aquí currentUser NO es nulo
+    val user = currentUser!!
+
+    // ========= HISTORIAL DESDE ROOM (PERSISTENCIA LOCAL) =========
+    val roomOrders by orderVm
+        .observeOrdersFor(user.email)
         .collectAsState(initial = emptyList())
-        .value
 
     Column(
         modifier = Modifier
@@ -140,7 +174,7 @@ fun UserScreen(
         Spacer(Modifier.height(8.dp))
 
         Text(
-            text = if (profileImageUri != null) "Deseas cambiar la foto" else "Deseas ponerte una foto",
+            text = if (profileImageUri != null) "¿Deseas cambiar la foto?" else "¿Deseas ponerte una foto?",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
@@ -152,17 +186,17 @@ fun UserScreen(
 
         // Info del usuario
         Text(
-            text = currentUser.name,
+            text = user.name,
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Text(
-            text = currentUser.email,
+            text = user.email,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-        if (currentUser.isVip) {
+        if (user.isVip) {
             Text(
                 text = "🌟 Usuario VIP - 20% de descuento",
                 style = MaterialTheme.typography.bodyLarge,
@@ -203,7 +237,7 @@ fun UserScreen(
                         text = "¡Agrega productos al carrito y realiza tu primera compra!",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.outline,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -215,21 +249,30 @@ fun UserScreen(
                     .padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(roomOrders) { ow ->
-                    OrderItemCard(order = ow) // 👈 versión para Room
+                items(roomOrders) { orderWithItems ->
+                    OrderItemCard(orderWithItems)
                 }
             }
         }
 
         Spacer(Modifier.height(16.dp))
 
+        // BOTÓN CERRAR SESIÓN
         Button(
-            onClick = { authViewModel.logout() },
+            onClick = {
+                authViewModel.logout()
+                navController.navigate("login") {
+                    popUpTo("home") { inclusive = false }
+                    launchSingleTop = true
+                }
+            },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("Cerrar Sesión") }
+        ) {
+            Text("Cerrar Sesión")
+        }
     }
 
-    // Diálogo: elegir cámara/galería
+    // ========= DIÁLOGO PARA ELEGIR CÁMARA / GALERÍA =========
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { showDialog.value = false },
@@ -254,11 +297,6 @@ fun UserScreen(
         )
     }
 }
-
-/* ==========
-   CARD para Room (OrderWithItems)
-   Mantén tu OrderItemCard(com.example.kozi.model.Order) si la usas en otro sitio.
-   ========== */
 
 @Composable
 fun OrderItemCard(order: OrderWithItems) {
@@ -315,21 +353,55 @@ fun OrderItemCard(order: OrderWithItems) {
 
             Column(Modifier.fillMaxWidth()) {
                 if (isVip) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Subtotal:", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("$${subtotal.toInt()}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Subtotal:",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "$${subtotal.toInt()}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Descuento VIP:", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-                        Text("-$${discount.toInt()}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Descuento VIP:",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            "-$${discount.toInt()}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
 
                 Spacer(Modifier.height(4.dp))
 
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Total:", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                    Text("$${total.toInt()}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Total:",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "$${total.toInt()}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }

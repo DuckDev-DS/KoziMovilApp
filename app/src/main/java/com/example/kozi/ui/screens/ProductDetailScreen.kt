@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,18 +33,21 @@ fun ProductDetailScreen(
     productId: Int,
     navController: NavController,
     viewModel: MainViewModel,
-    cartVm: CartViewModel // 👈 agregado
+    cartVm: CartViewModel
 ) {
-    val product = viewModel.products.value.find { it.id == productId }
-    val showMessageState = viewModel.showMessage.collectAsState().value
+    // 👇 Ahora sí: usamos collectAsState, nada de .value directo
+    val productsState by viewModel.products.collectAsState()
+    val product: Product? = productsState.find { it.id == productId }
+
+    val showMessageState by viewModel.showMessage.collectAsState()
 
     // Snackbar mensajes
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Mostrar mensaje
+    // Mostrar mensaje (ej: errores de API, compra realizada, etc.)
     LaunchedEffect(showMessageState) {
         if (showMessageState != null) {
-            snackbarHostState.showSnackbar(showMessageState)
+            snackbarHostState.showSnackbar(showMessageState!!)
             // Limpiar mensaje
             delay(1000)
             viewModel.clearMessage()
@@ -120,6 +124,14 @@ fun ProductDetailScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
 
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = product.category.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
@@ -144,10 +156,9 @@ fun ProductDetailScreen(
                             Text("Seguir Comprando")
                         }
 
-                        // 👇 cambia este botón
                         Button(
                             onClick = {
-                                // Agrega el producto usando Room
+                                // Agrega el producto usando Room vía CartViewModel
                                 cartVm.add(
                                     productId = product.id,
                                     name = product.name,
