@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
 
+<<<<<<< HEAD
     // Lista de productos que consumen las pantallas
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
@@ -30,6 +31,21 @@ class MainViewModel : ViewModel() {
     val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
 
     // Mensajes (snackbar)
+=======
+    // Lista de productos que consumen tus pantallas
+    private val _products = MutableStateFlow<List<Product>>(emptyList())
+    val products: StateFlow<List<Product>> = _products.asStateFlow()
+
+    // Carrito (Product -> cantidad)
+    private val _cartItems = MutableStateFlow<Map<Product, Int>>(emptyMap())
+    val cartItems: StateFlow<Map<Product, Int>> = _cartItems.asStateFlow()
+
+    // Filtro por categoría
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
+
+    // Mensajes (snackbar en HomeScreen)
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
     private val _showMessage = MutableStateFlow<String?>(null)
     val showMessage: StateFlow<String?> = _showMessage.asStateFlow()
 
@@ -39,17 +55,29 @@ class MainViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
+<<<<<<< HEAD
             // 1) Productos locales (para no dejar la app vacía si la API falla)
             val localProducts = ProductRepository.getProducts()
             _products.value = localProducts
 
             // 2) Intentar cargar datos desde la API
+=======
+            // 1) Cargar productos locales (categorías + imágenes) para no dejar la app en blanco
+            val localProducts = ProductRepository.getProducts()
+            _products.value = localProducts
+
+            // 2) Intentar actualizar con datos reales desde la API
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
             try {
                 val remoteProducts = KoziApiClient.api.getProductos()
                 val merged = mergeRemoteWithLocal(remoteProducts, localProducts)
                 _products.value = merged
             } catch (e: Exception) {
+<<<<<<< HEAD
                 // Si algo falla, nos quedamos con los productos locales
+=======
+                // Si la API falla, seguimos con productos locales y mostramos un mensaje
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
                 _showMessage.value =
                     "No se pudo conectar con el servidor. Se muestran productos locales."
             }
@@ -59,7 +87,11 @@ class MainViewModel : ViewModel() {
     /**
      * Une los productos remotos con los locales:
      * - Usa nombre, descripción y precio del backend.
+<<<<<<< HEAD
      * - Mantiene categoría e imagen de tu repositorio local (para que tus pantallas no cambien).
+=======
+     * - Mantiene categoría e imagen de tu repositorio local (para que tus screens no cambien).
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
      */
     private fun mergeRemoteWithLocal(
         remote: List<RemoteProducto>,
@@ -78,14 +110,23 @@ class MainViewModel : ViewModel() {
                     price = p.precio
                 )
             } else {
+<<<<<<< HEAD
                 // Producto que está en la API pero no en el repo local
+=======
+                // Si llega un producto que no existe en el repo local,
+                // lo creamos con categoría por defecto e imagen genérica.
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
                 Product(
                     id = p.id.toInt(),
                     name = p.nombre,
                     description = p.descripcion,
                     price = p.precio,
                     category = defaultCategory,
+<<<<<<< HEAD
                     image = R.drawable.ic_launcher_foreground // genérico
+=======
+                    image = R.drawable.ic_launcher_foreground
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
                 )
             }
         }
@@ -102,7 +143,6 @@ class MainViewModel : ViewModel() {
         return if (isVip) total * 0.8 else total // 20% de descuento para VIP
     }
 
-    // Obtener monto del descuento
     fun getDiscountAmount(isVip: Boolean): Double {
         return if (isVip) getTotalPrice() * 0.2 else 0.0
     }
@@ -136,9 +176,12 @@ class MainViewModel : ViewModel() {
         }
     }
 
+<<<<<<< HEAD
     // Guarda en historial antes de limpiar
+=======
+    // Guarda la compra en el historial y limpia el carrito
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
     fun clearCart(currentUser: User? = null) {
-        // Guardar en historial si hay productos y usuario
         val cartItemsCurrent = _cartItems.value
         if (cartItemsCurrent.isNotEmpty() && currentUser != null) {
             val newOrder = Order(
@@ -152,7 +195,6 @@ class MainViewModel : ViewModel() {
             _orders.value = _orders.value + newOrder
         }
 
-        // Limpiar carrito
         _cartItems.value = emptyMap()
         _showMessage.value = "🎉 ¡Compra realizada con éxito!"
     }
@@ -161,7 +203,11 @@ class MainViewModel : ViewModel() {
         _showMessage.value = null
     }
 
+<<<<<<< HEAD
     // Lista de nombres de categoría (para el dropdown de Home)
+=======
+    // Lista de nombres de categoría (para filtros)
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
     val categories: List<String>
         get() = _products.value.map { it.category.name }.distinct()
 
@@ -172,12 +218,20 @@ class MainViewModel : ViewModel() {
         else allProducts.filter { it.category.name == category }
     }
 
+<<<<<<< HEAD
     // Obtener órdenes de un usuario específico
+=======
+    // Historial por usuario
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
     fun getOrdersByUser(userId: Int): List<Order> {
         return _orders.value.filter { it.userId == userId }
     }
 
+<<<<<<< HEAD
     // Obtener todas las órdenes
+=======
+    // Todas las órdenes
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
     fun getAllOrders(): List<Order> {
         return _orders.value
     }

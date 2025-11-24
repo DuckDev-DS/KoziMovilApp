@@ -1,5 +1,6 @@
 package com.example.kozi.data.remote
 
+<<<<<<< HEAD
 import com.example.kozi.data.remote.model.*
 import retrofit2.Response
 import retrofit2.http.*
@@ -15,6 +16,24 @@ interface KoziApiService {
     // =======================
     //        PRODUCTOS
     // =======================
+=======
+import com.example.kozi.data.remote.model.LoginRequest
+import com.example.kozi.data.remote.model.Producto
+import com.example.kozi.data.remote.model.Usuario
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.POST
+
+interface KoziApiService {
+
+    // Healthcheck
+    @GET("api/health")
+    suspend fun health(): String
+
+    // Productos
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
     @GET("api/productos")
     suspend fun getProductos(): List<Producto>
 
@@ -28,6 +47,7 @@ interface KoziApiService {
         @Path("categoriaId") categoriaId: Long
     ): List<Producto>
 
+<<<<<<< HEAD
 
     // =======================
     //        USUARIOS
@@ -69,4 +89,11 @@ interface KoziApiService {
     suspend fun getPedidosByUsuario(
         @Path("usuarioId") usuarioId: Long
     ): Response<List<PedidoRemote>>
+=======
+    // Login de usuario
+    @POST("api/usuarios/login")
+    suspend fun login(
+        @Body request: LoginRequest
+    ): Response<Usuario>
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
 }

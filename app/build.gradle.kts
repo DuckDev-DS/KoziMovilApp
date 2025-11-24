@@ -44,6 +44,7 @@ android {
 }
 
 dependencies {
+<<<<<<< HEAD
 
     // --- NETWORK ---
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
@@ -60,6 +61,13 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 
     // --- ROOM ---
+=======
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+>>>>>>> f6cf1d074172c6631562fb2584b9f1c5c1fe51d8
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
