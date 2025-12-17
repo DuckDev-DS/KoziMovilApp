@@ -62,4 +62,11 @@ interface KoziApiService {
     suspend fun getPedidosByUsuario(
         @Path("usuarioId") usuarioId: Long
     ): Response<List<PedidoRemote>>
+
+    // Pedidos
+    @POST("api/pedidos")
+    suspend fun createPedido(
+        @Body request: PedidoCreateRequest
+    ): Response<PedidoRemote>
+
 }
